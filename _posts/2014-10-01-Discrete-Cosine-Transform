@@ -1,0 +1,27 @@
+---
+layout: post
+title: "Discrete Cosine Transform (DCT) "
+author: phelpsforpresident
+date: 2014-09-17 12:33:22
+
+markdownify: True
+---
+
+
+# Workflow 
+
+### Autocorrelation for a known structure
+
+We used a simulated image and observed its autocorrelation. This served as instruction to what a similar operation on our data must look like.
+
+![Sim_image](https://farm4.staticflickr.com/3900/15362424645_b2c41c86b4_o_d.png)
+
+The autocorrelation for this image is 
+
+![Sim_image](https://farm4.staticflickr.com/3931/15412244872_74731617eb_o_d.png)
+
+Next we looked at a treated SAXS image file. The data was made symmetric by mirroring it about the beamstop centre. This is seen in the image below.
+![Sim_image](https://farm4.staticflickr.com/3929/15226134437_5094b8622b_o_d.png)
+
+Finally we applied a DCT to this image and hoped that the autocorrelation from above and the DCT would be similar. As you can see, they are not.
+![Sim_image]( https://farm4.staticflickr.com/3931/15389638156_3ec9379aa7_o_d.png)
