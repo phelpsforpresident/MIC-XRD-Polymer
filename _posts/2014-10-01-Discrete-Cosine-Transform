@@ -2,7 +2,7 @@
 layout: post
 title: "Discrete Cosine Transform (DCT) "
 author: phelpsforpresident
-date: 2014-10-01 12:33:22
+date: 2014-10-01 1:45:22
 
 markdownify: True
 ---
@@ -10,7 +10,7 @@ markdownify: True
 
 # Workflow 
 
-### Autocorrelation for a known structure
+## Autocorrelation for a known structure
 
 We used a simulated image and observed its autocorrelation. This served as instruction to what a similar operation on our data must look like.
 
