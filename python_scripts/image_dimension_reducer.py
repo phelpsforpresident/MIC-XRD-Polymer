@@ -2,8 +2,8 @@ import numpy as np
 import os
 import skimage.io as skio
 
-class ImageDimensionReducer(object):
 
+class ImageDimensionReducer(object):
     """
     This `ImagePCA` uses Principle Component Analysis (PCA) to objectively
     find the differences between images.
@@ -33,14 +33,16 @@ class ImageDimensionReducer(object):
         k = 0
         file_names = sorted(os.listdir(folder))
         for file_name in file_names:
-            if file_name.endswith(file_type):
-                imarray = skio.imread(os.path.join(folder, file_name))
-                imarray = np.log(imarray + 0.1)
-                if k == 0:
-                    raw_data = imarray[None]
-                    k = 1
-                else:
-                    raw_data = np.concatenate((raw_data, imarray[None]))
+            if k == (k + 1) / 2:
+                if file_name.endswith(file_type):
+                    imarray = skio.imread(os.path.join(folder, file_name))
+                    imarray = np.log(imarray + 0.1)
+                    imarray = imarray[:600, 400:]
+                    if k == 0:
+                        raw_data = imarray[None]
+                        k = k + 1
+                    else:
+                        raw_data = np.concatenate((raw_data, imarray[None]))
         data = self._format_data(raw_data)
         self.data[folder] = data
         self.n_microstructures = self.n_microstructures + 1
