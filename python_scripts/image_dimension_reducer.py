@@ -43,6 +43,8 @@ class ImageDimensionReducer(object):
                         k = k + 1
                     else:
                         raw_data = np.concatenate((raw_data, imarray[None]))
+            else:
+                k = k + 1
         data = self._format_data(raw_data)
         self.data[folder] = data
         self.n_microstructures = self.n_microstructures + 1
