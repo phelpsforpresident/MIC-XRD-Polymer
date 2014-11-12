@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import skimage.io as skio
+#from libtiff import TIFF
 
 
 class ImageDimensionReducer(object):
