@@ -37,6 +37,7 @@ class ImageDimensionReducer(object):
                 if file_name.endswith(file_type):
                     imarray = skio.imread(os.path.join(folder, file_name))
                     imarray = np.log(imarray + 0.1)
+                    imarray = imarray / np.max(imarray)
                     imarray = imarray[:600, 400:]
                     if k == 0:
                         raw_data = imarray[None]
