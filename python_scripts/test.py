@@ -14,4 +14,4 @@ print 'Prep Data in', time.time() - t_start, 'sec'
 t_start = time.time()
 X_PCA = IDR.fit_transform()
 print 'Fit PCA in ', time.time() - t_start, 'sec'
-draw_PCA(X_PCA, 12)
+draw_PCA(X_PCA, 8)
