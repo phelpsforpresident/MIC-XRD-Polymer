@@ -15,27 +15,19 @@ In this post we will provide the overall work flow for doing Principle Component
 
 **Scaled SAXS X-ray Intensity Plot**
 
-# Dimensionality Reduction on Images
-
 A class called [ImageDimensionReducer](https://github.com/phelpsforpresident/MIC-XRD-Polymer/blob/gh-pages/python_scripts/image_dimension_reducer.py)
 was created to dimensionality reduction on image such as X-ray scattering data and/or 2-point statistics. 
 
 [Here](https://github.com/phelpsforpresident/MIC-XRD-Polymer/blob/gh-pages/python_scripts/test.py) is an example of
-how the class is used. It takes in an dimensionality reduction class from [sklearn](http://scikit-learn.org/stable/)
+how the class is used. It takes in an dimensionality reduction class from [sklearn](http://scikit-learn.org/stable/modules/classes.html#module-sklearn.decomposition)
 and uses it to create a low dimensional representation the images loaded.
 
-Below is an example of a plot of the X-ray scattering data from one sample reduced using PCA.
+Below is an example of a plot the X-ray scattering data from one sample reduced using PCA.
 
 
 ![PCA Image](https://gm1.ggpht.com/sQZ7uYFUAbGWs52rY9DKxkogTK967B_07ZyeadPUDLlsrkw8DC5PUbsW2q5ZdUkQ-I47wgyQypd-cbk3yJZVEm7vfl86lH4iGRGOcrPZdykack3YRJtfUqz2BEPpAfKQrnHuOUw2vuGNfmVYjt9kvfjdFQV5rcoJv7-8rFUux17u29IvyOTOfYw8uBpM8-fg1nbg0HQsQ_1BrfRNsT8849pf5LHIc06VJWkjPRNc_q4REgqAJuXAa4hKYfyVHYR9NxLqpi3lru8Llc1yz6SInggOHZFjLADYkSZN5Bs-j-Ojdgwt6C8OAKx7Qo1P0buNLyMaZy4KAct51iyabXoxjXS7gWGr3CTPFp6H7dACIguTYgHnwq7K57SrHQHgiC_F6Dc1EMPUwLbnLcasBhWFg84T7uRZLE5KEPIoTGNDNATCUke5KfyUFHENCLxlPavcRjKvn-k1L8jEYHPiZXC5_HoL8M0CUn-n0o8Wyc1qYm1h0ltzHhUGbjJV0HX-r1STvQFkrTTvLLz--jwqX-zejJvu7M8H3n0RAvdxuN4QZAQ7Ey34SdNOcgRRfQLexEp9-URyNVr5_w=w1600-h1000-l75-ft)
 
 
-**PCA of SAXS X-ray Intensity Plots**
-
-# Future Work
-
-- Contacted Dr. Hamid Garmestani (MSE) to gain a better understand of the relationship between X-ray scattering data and spatial correlations
-- Combine both SAXS and WAXS dataset for each sample and do PCA
-- Look at either structure-property or structure-processing linkages
+**PCA SAXS X-ray Intensity Plots for one Sample**
 
 
