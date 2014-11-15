@@ -21,11 +21,10 @@ class ImageDimensionReducer(object):
         self.model = model
         if self.model is None:
             raise RuntimeError("Must specify model")
-        self.data = {}
-        self.reduced_data = {}
-        self.n_images = 0
-        self.n_arrays = 0
+        self.data = None
+        self.reduced_data = None
         self.n_datasets = 0
+        self.n_datasets_names = []
 
     def load_images(self, directory_path=None, file_type=None):
         '''
@@ -37,9 +36,9 @@ class ImageDimensionReducer(object):
                 loaded.
         '''
         if directory_path is None:
-            raise RuntimeError("Must specify directory_path")
+            raise RuntimeError("directory_path not specified")
         if file_type is None:
-            file_type = '.*'
+            raise RuntimeError("file_type not specified")
         self._load_images(directory_path, file_type)
 
     def _load_images(self, directory, file_type):
@@ -47,25 +46,24 @@ class ImageDimensionReducer(object):
         Helper funciton to load image files.
         '''
         file_names = sorted(os.listdir(directory))
+        file_index = 0
+        while not file_names[file_index].endswith(file_type):
+            file_index = file_index + 1
         im = skio.imread(os.path.join(directory, file_names[0]))
         raw_data = im[None]
-        self.data[file_names[0]] = raw_data
+        if self.data is None:
+            self.data = raw_data
+        else:
+            self._check_dimensions(raw_data)
+        self.n_datasets_names.append(file_names[file_index])
         self.n_datasets = self.n_datasets + 1
-        for file_name in file_names[1:]:
+        for file_name in file_names[file_index:]:
             if file_name.endswith(file_type):
                 im = skio.imread(os.path.join(directory, file_name))
                 raw_data = np.concatenate((raw_data, im[None]))
-                self.n_images = self.n_images + 1
-        self.data[file_name] = raw_data
-        self.n_datasets = self.n_datasets + self.n_images
-
-    def _manipulate_data(self, im):
-        '''
-        Helper function to manipulate arrays representing images.
-        '''
-        im_log = np.log(im + 1)
-        im_log_norm = im_log / np.max(im_log)
-        return im_log_norm[:600, 400:]
+                self.n_datasets = self.n_datasets + 1
+                self.n_datasets_names.append(file_name)
+        self.data = np.concatenate((self.data, raw_data))
 
     def _prep_data(self):
         '''
@@ -92,19 +90,18 @@ class ImageDimensionReducer(object):
         This function leverages the model's fit_transform function to reduce
         the number of dimensions.
         '''
-        preped_data = self._prep_data()
-        self.reduced_data = self.model.fit_transform(preped_data)
+        formated_data = self._format_data(self.data)
+        self.reduced_data = self.model.fit_transform(formated_data)
         return self.reduced_data
 
     def remove_data(self):
         '''
         removes all data from ImageDimensionReducer
         '''
-        self.data = {}
-        self.reduced_data = {}
-        self.n_images = 0
-        self.n_arrays = 0
+        self.data = None
+        self.reduced_data = None
         self.n_datasets = 0
+        self.n_datasets_names = []
 
     def save_to_json(self):
         '''
@@ -119,5 +116,18 @@ class ImageDimensionReducer(object):
         Loads an array as data.
         '''
         if name is None:
-            name = str(self.n_datasets + 1)
-        self.data[name] = X[None]
+            index = range(self.n_datasets, X.shape[0])
+            new_name = index
+        else:
+            index = range(0, X.shape[0])
+            new_name = [name + str(x) for x in index]
+        self.n_datasets_names = self.n_datasets_names + new_name
+        if self.data is None:
+            self.data = X
+        else:
+            self._check_dimensions(X)
+            self.data = np.concatnate(self.data, X)
+
+    def _check_dimensions(self, X):
+        if self.data[1:] != X.shape[:1]:
+            raise RuntimeError("Array sizes don't match")
