@@ -1,6 +1,8 @@
 import numpy as np
 import os
+import json
 import skimage.io as skio
+from PIL import Image
 
 
 class ImageDimensionReducer(object):
@@ -10,7 +12,7 @@ class ImageDimensionReducer(object):
     class from sklearn, and creates a reduced representation of the images.
     """
 
-    def __init__(self, model=None):
+    def __init__(self, model=None, thumbnails_size=(75, 75)):
         '''
         Create an instance of ImageDimensionReducer.
 
@@ -23,8 +25,10 @@ class ImageDimensionReducer(object):
             raise RuntimeError("Must specify model")
         self.data = None
         self.reduced_data = None
-        self.n_datasets = 0
-        self.n_datasets_names = []
+        self.n_samples = 0
+        self.n_samples_names = []
+        self.thumbnails_size = thumbnails_size
+        self.datasets = {}
 
     def load_images(self, directory_path=None, file_type=None):
         '''
@@ -41,40 +45,47 @@ class ImageDimensionReducer(object):
             raise RuntimeError("file_type not specified")
         self._load_images(directory_path, file_type)
 
-    def _load_images(self, directory, file_type):
+    def _load_images(self, directory, file_type, dataset_name=None):
         '''
         Helper funciton to load image files.
         '''
         file_names = sorted(os.listdir(directory))
         file_index = 0
+        dataset_start_index = self.n_samples
         while not file_names[file_index].endswith(file_type):
             file_index = file_index + 1
         im = skio.imread(os.path.join(directory, file_names[0]))
         raw_data = im[None]
         if self.data is None:
             self.data = raw_data
+            final_index = 1
         else:
             self._check_dimensions(raw_data)
-        self.n_datasets_names.append(file_names[file_index])
-        self.n_datasets = self.n_datasets + 1
-        for file_name in file_names[file_index:]:
+            final_index = 0
+        self.n_samples_names.append(file_names[file_index][:-4])
+        self.n_samples = self.n_samples + 1
+        for file_name in file_names[file_index + 1:]:
             if file_name.endswith(file_type):
                 im = skio.imread(os.path.join(directory, file_name))
                 raw_data = np.concatenate((raw_data, im[None]))
-                self.n_datasets = self.n_datasets + 1
-                self.n_datasets_names.append(file_name)
-        self.data = np.concatenate((self.data, raw_data))
+                self.n_samples = self.n_samples + 1
+                self.n_samples_names.append(file_name[:-4])
+        self.data = np.concatenate((self.data, raw_data[final_index:]))
+        if dataset_name is None:
+            dataset_name = file_names[0][:-9]
+        self.datasets[dataset_name] = slice(dataset_start_index,
+                                            self.n_samples)
 
     def _prep_data(self):
         '''
         Helper function that pulls data out of dictionary and into an array.
         '''
         size = self.data[self.data.keys()[0]].shape
-        size = (self.n_datasets,) + (np.prod(size[1:]),)
+        size = (self.n_samples,) + (np.prod(size[1:]),)
         preped_data = np.zeros(size)
         for key, value in self.data.iteritems():
             formated_data = self._format_data(value)
-            preped_data[:self.n_datasets] = formated_data
+            preped_data[:self.n_samples] = formated_data
         return preped_data
 
     def _format_data(self, raw_data):
@@ -94,40 +105,73 @@ class ImageDimensionReducer(object):
         self.reduced_data = self.model.fit_transform(formated_data)
         return self.reduced_data
 
-    def remove_data(self):
+    def clear_data(self):
         '''
         removes all data from ImageDimensionReducer
         '''
         self.data = None
         self.reduced_data = None
-        self.n_datasets = 0
-        self.n_datasets_names = []
+        self.n_samples = 0
+        self.n_samples_names = []
 
-    def save_to_json(self):
+    def reduced_data_to_json(self, file_name=None, file_path=None):
         '''
         Saves data to json file.
         '''
-        if self.data == {}:
-            raise RuntimeError("No data to save.")
-        raise NotImplementedError("Not needed yet.")
+        if file_name is None:
+            raise RuntimeError("file_name not specified")
+        if file_path is None:
+            raise RuntimeError("file_path not specified")
+        if self.data is None:
+            raise RuntimeError("No data.")
+        if self.reduced_data is None:
+            raise RuntimeError("No reduced data.")
+        reduced_data_dict = {}
+        for key, value in self.datasets.iteritems():
+            reduced_data_dict[key] = self.reduced_data[value].tolist()
+        print file_name
+        with open(os.path.join(file_path, file_name), 'w') as json_file:
+            json.dump(reduced_data_dict, json_file)
 
-    def load_array(self, X, name=None):
+    def make_thumbnails(self, thumbnail_path=None,
+                        thumbnail_size=(200, 200), thumbnail_type='.png'):
+        '''
+        Creates thumbnails of the images.
+
+        Ags:
+            thumbnail_path: path to directory where thumbnails are exported.
+            thumbnail_size: size of thumbnails
+            thumbnail_type: file type of the thumbnails
+        '''
+        if thumbnail_path is None:
+            raise RuntimeError('thumbnail_path not specified')
+        try:
+            os.stat(thumbnail_path)
+        except:
+            os.mkdir(thumbnail_path)
+        for index in range(self.n_samples):
+            im = Image.fromarray(self.data[index].astype(np.uint8))
+            im.save(os.path.join(thumbnail_path,
+                    self.n_samples_names[index] + thumbnail_type))
+
+    def load_array(self, X, dataset_name=None):
         '''
         Loads an array as data.
         '''
-        if name is None:
-            index = range(self.n_datasets, X.shape[0])
-            new_name = index
-        else:
-            index = range(0, X.shape[0])
-            new_name = [name + str(x) for x in index]
-        self.n_datasets_names = self.n_datasets_names + new_name
+        index = range(self.n_samples, X.shape[0])
+        if dataset_name is None:
+            dataset_name = str(len(self.datasets))
+        new_name = [dataset_name + str(x) for x in index]
+        dataset_start_index = len(self.n_samples)
         if self.data is None:
             self.data = X
         else:
             self._check_dimensions(X)
             self.data = np.concatnate(self.data, X)
+        self.n_samples_names = self.n_samples_names + new_name
+        self.datasets[dataset_name] = slice(dataset_start_index,
+                                            len(self.n_samples_names))
 
     def _check_dimensions(self, X):
-        if self.data[1:] != X.shape[:1]:
+        if self.data.shape[1:] != X.shape[:1]:
             raise RuntimeError("Array sizes don't match")
