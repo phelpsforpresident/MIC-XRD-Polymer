@@ -30,7 +30,8 @@ class ImageDimensionReducer(object):
         self.thumbnails_size = thumbnails_size
         self.datasets = {}
 
-    def load_images(self, directory_path=None, file_type=None):
+    def load_images(self, directory_path=None,
+                    file_type=None, dataset_name=None):
         '''
         load data from a directory
 
@@ -43,11 +44,11 @@ class ImageDimensionReducer(object):
             raise RuntimeError("directory_path not specified")
         if file_type is None:
             raise RuntimeError("file_type not specified")
-        self._load_images(directory_path, file_type)
+        self._load_images(directory_path, file_type, dataset_name)
 
     def _load_images(self, directory, file_type, dataset_name=None):
         '''
-        Helper funciton to load image files.
+        Helper function to load image files.
         '''
         file_names = sorted(os.listdir(directory))
         file_index = 0
@@ -90,7 +91,8 @@ class ImageDimensionReducer(object):
 
     def _format_data(self, raw_data):
         '''
-        Changes the size of the data to mee
+        Changes the size of the data to meet the format required to do
+        dimensionality reduction.
         '''
         size = np.array(raw_data.shape)
         new_size = (size[0], np.prod(size[1:]))
