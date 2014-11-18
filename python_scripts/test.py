@@ -3,8 +3,8 @@ from sklearn.decomposition import KernelPCA
 from image_dimension_reducer import ImageDimensionReducer
 from pymks.tools import draw_PCA
 
-model = KernelPCA(n_components=3)
-IDR = ImageDimensionReducer(model=model)
+reducer = KernelPCA(n_components=3)
+IDR = ImageDimensionReducer(reducer=reducer)
 
 t_start = time.time()
 #IDR.load_images('/Users/abhiramkannan/Documents/SAXS_for_DB/', '.tif')
