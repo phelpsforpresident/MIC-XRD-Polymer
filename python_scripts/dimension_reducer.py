@@ -5,6 +5,7 @@ from PIL import Image
 
 
 class DimensionReducer(object):
+
     """
     `DimensionReducer` takes in `reducer` and data to perform
     """
@@ -41,15 +42,18 @@ class DimensionReducer(object):
         if dataset_name is None:
             dataset_name = str(len(self.datasets))
         new_name = [dataset_name + str(x) for x in index]
-        dataset_start_index = len(self.n_samples)
+        dataset_start_index = self.n_samples
         if self.data is None:
             self.data = X
         else:
             self._check_dimensions(X)
-            self.data = np.concatnate(self.data, X)
+            print self.data.shape
+            print X.shape
+            self.data = np.concatenate((self.data, X))
         self.n_samples_names = self.n_samples_names + new_name
+        self.n_samples += X.shape[0]
         self.datasets[dataset_name] = slice(dataset_start_index,
-                                            len(self.n_samples_names))
+                                            self.n_samples)
 
     def _check_dimensions(self, X):
         '''
@@ -58,7 +62,7 @@ class DimensionReducer(object):
         Agrs:
             X: new data array.
         '''
-        if self.data.shape[1:] != X.shape[:1]:
+        if self.data.shape[1:] != X.shape[1:]:
             raise RuntimeError("Array sizes don't match")
 
     def _prep_data(self):
@@ -94,6 +98,18 @@ class DimensionReducer(object):
         new_size = (size[0], np.prod(size[1:]))
         return raw_data.reshape(new_size)
 
+    @property
+    def make_data_labels(self):
+        '''
+        Creates data lables for each all n_datasets
+        '''
+        labels = np.zeros(self.n_samples)
+        i = 0
+        for key, value in self.datasets.iteritems():
+            labels[value] = i
+            i += 1
+        self.dataset_lables = labels
+
     def fit_transform(self):
         '''
         This function leverages the model's fit_transform function to create a
@@ -102,7 +118,11 @@ class DimensionReducer(object):
         Returns: Reduced dimension representation of the raw_data.
         '''
         formated_data = self._format_data(self.data)
-        self.reduced_data = self.reducer.fit_transform(formated_data)
+        if hasattr(self, 'dataset_lables'):
+            self.reduced_data = self.reducer.fit_transform(formated_data,
+                                                           self.dataset_lables)
+        else:
+            self.reduced_data = self.reducer.fit_transform(formated_data)
         return self.reduced_data
 
     def clear_data(self):
@@ -113,6 +133,7 @@ class DimensionReducer(object):
         self.reduced_data = None
         self.n_samples = 0
         self.n_samples_names = []
+        self.datasets = {}
 
     def reduced_data_to_json(self, file_name=None, file_path=None):
         '''
@@ -158,4 +179,4 @@ class DimensionReducer(object):
         for index in range(self.n_samples):
             im = Image.fromarray(self.data[index].astype(np.uint8))
             im.save(os.path.join(thumbnail_path,
-                    self.n_samples_names[index] + thumbnail_type))
+                                 self.n_samples_names[index] + thumbnail_type))
