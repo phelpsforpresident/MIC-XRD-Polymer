@@ -98,7 +98,6 @@ class DimensionReducer(object):
         new_size = (size[0], np.prod(size[1:]))
         return raw_data.reshape(new_size)
 
-    @property
     def make_data_labels(self):
         '''
         Creates data lables for each all n_datasets
@@ -156,7 +155,6 @@ class DimensionReducer(object):
         reduced_data_dict = {}
         for key, value in self.datasets.iteritems():
             reduced_data_dict[key] = self.reduced_data[value].tolist()
-        print file_name
         with open(os.path.join(file_path, file_name), 'w') as json_file:
             json.dump(reduced_data_dict, json_file)
 

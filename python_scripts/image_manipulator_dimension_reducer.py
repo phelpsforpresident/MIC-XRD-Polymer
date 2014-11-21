@@ -17,9 +17,13 @@ class ImageManipulatorDimensionReducer(ImageDimensionReducer):
         normalizing the array.
         """
         sliced_data = self.data[new_slice]
-        log_data = np.log(sliced_data + 1)
-        slice_max = np.amax(log_data, axis=tuple(range(1, log_data.ndim)))
-        log_norm_data = log_data * 1. / slice_max[:, None, None]
+        log_data = np.log(sliced_data + 10)
+        #slice_max = np.amax(log_data, axis=tuple(range(1, log_data.ndim)))       
+        #slice_median = np.median(log_data, axis=tuple(range(1, log_data.ndim)))
+        slice_mean = np.mean(log_data, axis=tuple(range(1, log_data.ndim)))
+        #log_norm_data = log_data * 1. / slice_max[:, None, None]
+        #log_norm_data = log_data * 1. / slice_median[:, None, None]
+        log_norm_data = log_data * 1. / slice_mean[:, None, None]
         self.manipulated_data = log_norm_data
 
     def fit_transform(self):
@@ -30,7 +34,11 @@ class ImageManipulatorDimensionReducer(ImageDimensionReducer):
         Returns: Reduced dimension representation of the raw_data.
         '''
         formated_data = self._format_data(self.manipulated_data)
-        self.reduced_data = self.reducer.fit_transform(formated_data)
+        if hasattr(self, 'dataset_lables'):
+            self.reduced_data = self.reducer.fit_transform(formated_data,
+                                                           self.dataset_lables)
+        else:
+            self.reduced_data = self.reducer.fit_transform(formated_data)
         return self.reduced_data
 
     def make_thumbnails(self, thumbnail_path=None,
