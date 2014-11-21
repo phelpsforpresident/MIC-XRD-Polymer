@@ -6,7 +6,7 @@ import json
 
 def draw_PCA_from_json(json_file, title):
     data = []
-    with open('tmp_json.JSON', 'rb') as f:
+    with open(json_file, 'rb') as f:
         for line in f:
             data.append(json.loads(line))
     n_components = len(data[0].values()[0][0])

@@ -2,7 +2,9 @@ import time
 from sklearn.decomposition import KernelPCA
 from image_manipulator_dimension_reducer \
     import ImageManipulatorDimensionReducer
-from pymks.tools import draw_PCA
+from draw_pca import draw_PCA_from_json
+
+'''
 
 #reducer = LDA(n_components=3, priors=3)
 reducer = KernelPCA(n_components=3)
@@ -101,4 +103,6 @@ print 'Made JSON in ', time.time() - t_start, 'secs'
 print 'data shape', IMDR.manipulated_data.shape
 print 'X_PCA shape', X_PCA.shape
 draw_PCA(X_PCA, 12)
+'''
 
+draw_PCA_from_json('MEAN_tmp_json.JSON', 'X-ray Scattering')
