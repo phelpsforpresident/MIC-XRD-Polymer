@@ -1,75 +1,60 @@
 import numpy as np
 import os
 import skimage.io as skio
+from dimension_reducer import DimensionReducer
 
 
-class ImageDimensionReducer(object):
+class ImageDimensionReducer(DimensionReducer):
+
     """
-    This `ImagePCA` uses Principle Component Analysis (PCA) to objectively
-    find the differences between images.
+    This `ImageDimensionReducer` uses takes in a dimensionality reduction
+    class from sklearn, and creates a reduced representation of the images.
     """
 
-    def __init__(self, model=None):
+    def load_images(self, directory_path=None,
+                    file_type=None, dataset_name=None):
         '''
-        Create an instance of ImageDimensionReducer.
+        load data from a directory
+
+        Args:
+            directory_path: path to directory containing image files.
+            file_type: provides an option to specify the type of file to be
+                loaded.
+            dataset_name: The name of the datasets.
         '''
-        self.model = model
-        if self.model is None:
-            raise RuntimeError("Must specify model")
-        self.data = {}
-        self.preped_data = None
-        self.n_t_steps = 0
-        self.n_microstructures = 0
+        if directory_path is None:
+            raise RuntimeError("directory_path not specified")
+        if file_type is None:
+            raise RuntimeError("file_type not specified")
+        self._load_images(directory_path, file_type, dataset_name)
 
-    def Load_data(self, data_file=None, data_name=None):
-        if data_name is None:
-            raise RuntimeError("Must specify data_name")
-        if data_file is None:
-            raise RuntimeError("Must specify data_file")
-        sample_data = self._get_data(data_name)
-        self.data[data_name] = sample_data
-
-    def load_data(self, folder, file_type):
-        k = 0
-        file_names = sorted(os.listdir(folder))
-        for file_name in file_names:
-            if k == (k + 1) / 2:
-                if file_name.endswith(file_type):
-                    imarray = skio.imread(os.path.join(folder, file_name))
-                    imarray = np.log(imarray + 0.1)
-                    imarray = imarray[:600, 400:]
-                    if k == 0:
-                        raw_data = imarray[None]
-                        k = k + 1
-                    else:
-                        raw_data = np.concatenate((raw_data, imarray[None]))
-            else:
-                k = k + 1
-        data = self._format_data(raw_data)
-        self.data[folder] = data
-        self.n_microstructures = self.n_microstructures + 1
-
-    def prep_data(self):
-        size = self.data[self.data.keys()[0]].shape
-        l = len(self.data)
-        self.n_t_steps = size[0]
-        size = (l * self.n_t_steps,) + size[1:]
-        preped_data = np.zeros(size)
-        i = 0
-        for key, value in self.data.iteritems():
-            preped_data[i * self.n_t_steps:(i + 1) * self.n_t_steps] = value
-        self.preped_data = preped_data
-
-    def _format_data(self, raw_data):
-        size = np.array(raw_data.shape)
-        new_size = (size[0], np.prod(size[1:]))
-        return raw_data.reshape(new_size)
-
-    def fit_transform(self):
-        return self.model.fit_transform(self.preped_data)
-
-    def remove_data(self):
-        self.data = {}
-        self.preped_data = None
-        self.n_t_steps = 0
-        self.n_microstructures = 0
+    def _load_images(self, directory, file_type, dataset_name=None):
+        '''
+        Helper function for the funciton load_images.
+        '''
+        file_names = sorted(os.listdir(directory))
+        file_index = 0
+        dataset_start_index = self.n_samples
+        while not file_names[file_index].endswith(file_type):
+            file_index = file_index + 1
+        im = skio.imread(os.path.join(directory, file_names[0]))
+        raw_data = im[None]
+        if self.data is None:
+            self.data = raw_data
+            final_index = 1
+        else:
+            self._check_dimensions(raw_data)
+            final_index = 0
+        self.n_samples_names.append(file_names[file_index][:-4])
+        self.n_samples = self.n_samples + 1
+        for file_name in file_names[file_index + 1:]:
+            if file_name.endswith(file_type):
+                im = skio.imread(os.path.join(directory, file_name))
+                raw_data = np.concatenate((raw_data, im[None]))
+                self.n_samples = self.n_samples + 1
+                self.n_samples_names.append(file_name[:-4])
+        self.data = np.concatenate((self.data, raw_data[final_index:]))
+        if dataset_name is None:
+            dataset_name = file_names[0][:-9]
+        self.datasets[dataset_name] = slice(dataset_start_index,
+                                            self.n_samples)
