@@ -1,7 +1,5 @@
 import numpy as np
-import os
 from image_dimension_reducer import ImageDimensionReducer
-from PIL import Image
 
 
 class ImageManipulatorDimensionReducer(ImageDimensionReducer):
@@ -29,9 +27,7 @@ class ImageManipulatorDimensionReducer(ImageDimensionReducer):
 
         Returns: Reduced dimension representation of the raw_data.
         '''
-        formated_data = self._format_data(self.manipulated_data)
-        self.reduced_data = self.reducer.fit_transform(formated_data)
-        return self.reduced_data
+        self._fit_transform(self.manipulated_data)
 
     def make_thumbnails(self, thumbnail_path=None,
                         thumbnail_size=(200, 200), thumbnail_type='.png'):
@@ -43,14 +39,8 @@ class ImageManipulatorDimensionReducer(ImageDimensionReducer):
             thumbnail_size: size of thumbnails
             thumbnail_type: file type of the thumbnails
         '''
-        if thumbnail_path is None:
-            raise RuntimeError('thumbnail_path not specified')
-        try:
-            os.stat(thumbnail_path)
-        except:
-            os.mkdir(thumbnail_path)
-        for index in range(self.n_samples):
-            im = Image.fromarray((255 * self.manipulated_data[index]).
-                                 astype(np.uint8))
-            im.save(os.path.join(thumbnail_path,
-                                 self.n_samples_names[index] + thumbnail_type))
+        thumbnail_data = self.manipulated_data
+        self._make_thumbnails(thumbnail_data=thumbnail_data,
+                              thumbnail_path=thumbnail_path,
+                              thumbnail_size=thumbnail_size,
+                              thumbnail_type=thumbnail_type)
