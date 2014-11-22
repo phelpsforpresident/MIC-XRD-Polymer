@@ -17,8 +17,8 @@ class DimensionReducer(object):
         Args:
             reducer: Any class from sklearn that inherts the
                 `base.TransformerMixin` class. Some of these include `PCA`
-                `RandomizedPCA`, `KernelPCA`, `SparePCA`, `LDA`, `QDA`,
-                `LocalLinearEmbedding`, `Isomap`, `MDS`, `SpectralEmbedding`,
+                `RandomizedPCA`, `KernelPCA`, `SparePCA`, `LDA`, `Isomap`,
+                `MDS`, `SpectralEmbedding`,
                 `TSNE`, etc.
         '''
         self.reducer = reducer
@@ -47,8 +47,6 @@ class DimensionReducer(object):
             self.data = X
         else:
             self._check_dimensions(X)
-            print self.data.shape
-            print X.shape
             self.data = np.concatenate((self.data, X))
         self.n_samples_names = self.n_samples_names + new_name
         self.n_samples += X.shape[0]
@@ -98,7 +96,6 @@ class DimensionReducer(object):
         new_size = (size[0], np.prod(size[1:]))
         return raw_data.reshape(new_size)
 
-    @property
     def make_data_labels(self):
         '''
         Creates data lables for each all n_datasets
@@ -117,7 +114,10 @@ class DimensionReducer(object):
 
         Returns: Reduced dimension representation of the raw_data.
         '''
-        formated_data = self._format_data(self.data)
+        self._fit_transform(self.data)
+
+    def _fit_transform(self, data):
+        formated_data = self._format_data(data)
         if hasattr(self, 'dataset_lables'):
             self.reduced_data = self.reducer.fit_transform(formated_data,
                                                            self.dataset_lables)
@@ -156,7 +156,6 @@ class DimensionReducer(object):
         reduced_data_dict = {}
         for key, value in self.datasets.iteritems():
             reduced_data_dict[key] = self.reduced_data[value].tolist()
-        print file_name
         with open(os.path.join(file_path, file_name), 'w') as json_file:
             json.dump(reduced_data_dict, json_file)
 
@@ -170,8 +169,18 @@ class DimensionReducer(object):
             thumbnail_size: size of thumbnails
             thumbnail_type: file type of the thumbnails
         '''
+        thumbnail_data = self.data
+        self._make_thumbnails(thumbnail_data=thumbnail_data,
+                              thumbnail_path=thumbnail_path,
+                              thumbnail_size=thumbnail_size,
+                              thumbnail_type=thumbnail_type)
+
+    def _make_thumbnails(self, thumbnail_data=None, thumbnail_path=None,
+                         thumbnail_size=(200, 200), thumbnail_type='.png'):
         if thumbnail_path is None:
             raise RuntimeError('thumbnail_path not specified')
+        if thumbnail_data is None:
+            raise RuntimeError('thumbnail_data not specified')
         try:
             os.stat(thumbnail_path)
         except:
@@ -180,3 +189,4 @@ class DimensionReducer(object):
             im = Image.fromarray(self.data[index].astype(np.uint8))
             im.save(os.path.join(thumbnail_path,
                                  self.n_samples_names[index] + thumbnail_type))
+
