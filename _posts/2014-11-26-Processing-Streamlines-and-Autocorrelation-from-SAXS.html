@@ -20,3 +20,14 @@ step.
 ![Image 2](https://farm8.staticflickr.com/7558/15266105593_810ee11acc_o_d.png)
 
 ![Image 3](https://farm8.staticflickr.com/7515/15883766811_64d9a56abf_o_d.png)
+
+# Autocorrelation of a Local State from SAXS Data and Volume Fraction
+
+This [derivation](http://nbviewer.ipython.org/github/phelpsforpresident/MIC-XRD-Polymer/blob/gh-pages/notebooks/Relationship_between_XRD_and_Autocorrelation.ipynb)
+shows how to come up with the following relationship between SAXS intensity images, volume fraction and autocorrelation
+of one local state for a system with only 2 local states.
+
+$$f^{11}( \\pmb x) = \\frac{1}{V \\eta_o^2} \\int I ( \\pmb k) e^{-i\\pmb k\\pmb z} d\\pmb z + V_1^2$$
+
+If we can learn how to handle the portion of the data from the beam stop, we should be able to recover the 
+autocorrelation for the crystalline state.
