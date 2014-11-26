@@ -27,6 +27,21 @@ This [derivation](http://nbviewer.ipython.org/github/phelpsforpresident/MIC-XRD-
 shows how to come up with the following relationship between SAXS intensity images, volume fraction and autocorrelation
 of one local state for a system with only 2 local states.
 
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript"
+src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+{% if page.autonumber %}
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+{% endif %}
+
 $$f^{11}( \\pmb x) = \\frac{1}{V \\eta_o^2} \\int I ( \\pmb k) e^{-i\\pmb k\\pmb z} d\\pmb z + V_1^2$$
 
 If we can learn how to handle the portion of the data from the beam stop, we should be able to recover the 
