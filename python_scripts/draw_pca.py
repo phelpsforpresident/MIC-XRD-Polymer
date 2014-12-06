@@ -4,11 +4,8 @@ import numpy as np
 import json
 
 
-def draw_PCA_from_json(json_file, title):
-    data = []
-    with open(json_file, 'rb') as f:
-        for line in f:
-            data.append(json.loads(line))
+def draw_PCA_from_json(path, title):
+    data = _load_json(path)
     n_components = len(data[0].values()[0][0])
     if n_components == 2:
         _draw_PCA_2D_from_dict(data[0], title)
@@ -16,6 +13,14 @@ def draw_PCA_from_json(json_file, title):
         _draw_PCA_3D_from_dict(data[0], title)
     else:
         raise RuntimeError('n_components must be either 2 or 3')
+
+
+def _load_json(path):
+    data = []
+    with open(path, 'rb') as f:
+        for line in f:
+            data.append(json.loads(line))
+    return data
 
 
 def draw_PCA(X, n_sets):
