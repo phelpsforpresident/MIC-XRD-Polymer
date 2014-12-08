@@ -7,6 +7,7 @@ import json
 def draw_PCA_from_json(path, title):
     data = _load_json(path)
     n_components = len(data[0].values()[0][0])
+    n_components = 3
     if n_components == 2:
         _draw_PCA_2D_from_dict(data[0], title)
     elif n_components == 3:
