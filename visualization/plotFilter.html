@@ -1,0 +1,635 @@
+<!--
+CSE6242 Project Visualization
+Abhiram Kannan, David Brough, David Scripka, Allen Koh
+Georgia Tech
+Fall 2014
+-->
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.axis text {
+    font: 14px sans-serif;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.container {
+	width: 49%;
+	height: 49%;
+	float: left;
+}
+
+.container2 {
+    width: 49%;
+    height: 49%;
+    float: left;
+}
+
+.filter {
+	float: left;
+	margin: 50px 20px 20px 0px;
+	font: 20px sans-serif;
+}
+
+.overlay {
+    fill: none;
+    pointer-events: all;
+}
+
+.focus circle {
+    fill: none;
+    stroke: steelblue;
+}
+
+.focusClone circle {
+    fill: none;
+    stroke: steelblue;
+}
+
+
+
+</style>
+
+<head>
+    <title>CSE6242 Project Proposal Viz</title>
+</head>
+
+<body>
+	<h1 style="font-family:sans-serif; font-size: 40px"> <center>MatSciViz</center> </h1>
+    <!--div for PC chart area-->
+    <div class="container" id="pc_chart"></div>
+    <!--div for image area-->
+    <div class="container" id="images"></div>
+    <!--div for stress/strain chart area-->
+    <div class="container" id="ss_chart"></div>
+    <!--div for filter control area-->
+    <div class="container2" id="filters"></div>
+</body>
+
+<script src="d3/d3.v3.min.js"></script>
+<script type="text/javascript">
+    
+    //set margins
+    var margin = {top: 20, right: 20, bottom: 70, left: 70},
+    width = 650 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+    
+    //set axis ranges
+    var xRange = d3.scale.linear().range([0, width]);
+    var yRange = d3.scale.linear().range([height, 0]);
+    
+    //area for PC chart
+    var svg = d3.select("#pc_chart").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .style("float", "right")
+                .style("margin-right", "10%")
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + (margin.top+20) + ")");
+                
+
+    //area for stress/strain chart
+    var ssChart = d3.select("#ss_chart").append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .style("float", "right")
+                    .style("margin-right", "10%")
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + (margin.top+20) + ")");
+    
+    //area for image
+    var image = d3.select("#images").append("svg")
+                  .attr("width", width + margin.left + margin.right)
+                  .attr("height", height + margin.top + margin.bottom)
+                  .append("g")
+                  .attr("transform", "translate(" + margin.left + "," + (margin.top+20) + ")");
+
+    //import data from json
+    d3.json("Vis_data.json", function(error, data) {
+
+        //title for Images
+        d3.select("#images").select("svg").append("g").append("text")
+            .attr("x", (width / 1.5))
+            .attr("y", margin.top)
+            .attr("text-anchor", "middle")
+            .style("font-size", "22px")
+            .style("font-family", "sans-serif")
+            .style("font-weight", "bold")
+            .text("Images");
+            
+            
+        //title for PC chart
+        d3.select("#pc_chart").select("svg").append("g").append("text")
+            .attr("x", (width / 1.5))
+            .attr("y", margin.top)
+            .attr("text-anchor", "middle")
+            .style("font-size", "22px")
+            .style("font-family", "sans-serif")
+            .style("font-weight", "bold")
+            .text("PC Graph");
+            
+        //set x axis for PC chart
+        svg.append("g")
+           .attr("class", "x axis")
+           .attr("transform", "translate(0," + height + ")")
+           .append("text")
+           .attr("class", "xAxisLabel")
+           .attr("transform","translate(" + width/2 + ",40)")
+           .attr("text-anchor", "middle")
+           .style("font-size", "16px")
+        
+        //set y axis for PC chart
+        svg.append("g")
+           .attr("class", "y axis")
+           .append("text")
+           .attr("class", "yAxisLabel")
+           .attr("transform","translate(-40," + height/2 + ") rotate(-90)")
+           .attr("text-anchor", "middle")
+           .style("font-size", "16px")
+            
+        //title for stress/strain chart
+        d3.select("#ss_chart").select("svg").append("g").append("text")
+            .attr("x", (width / 1.5))
+            .attr("y", margin.top)
+            .attr("text-anchor", "middle")
+            .style("font-size", "22px")
+            .style("font-family", "sans-serif")
+            .style("font-weight", "bold")
+            .text("Stress vs. Strain Graph");
+
+        //set x axis for stress/strain chart
+        ssChart.append("g")
+               .attr("class", "x axis")
+               .attr("transform", "translate(0," + height + ")")
+               .append("text")
+               .attr("class", "xAxisLabel")
+               .attr("transform","translate(" + width/2 + ",40)")
+               .attr("text-anchor", "middle")
+               .style("font-size", "16px")
+        
+        //set y axis for stress/strain chart
+        ssChart.append("g")
+               .attr("class", "y axis")
+               .append("text")
+               .attr("class", "yAxisLabel")
+               .attr("transform","translate(-40," + height/2 + ") rotate(-90)")
+               .attr("text-anchor", "middle")
+               .style("font-size", "16px")
+
+        //Get total number of series
+    	function getSeries(data) {
+            var series =  [];
+            data.forEach(function(d) { series.push(d.sample); });
+            return uniq(series);
+        }
+	
+        //remove duplicates (this function from https://stackoverflow.com/questions/9229645/remove-duplicates-from-javascript-array)
+        function uniq(a) {
+            return a.sort().filter(function(item, pos) {
+                return !pos || item != a[pos - 1];
+            })
+        }
+            
+        var series = getSeries(data);
+	
+        //Create colors for plots
+        var colors = ["#a6cee3","#1f78b4","#b2df8a","#33a02c","#fb9a99","#e31a1c","#fdbf6f","#ff7f00","#cab2d6","#6a3d9a","#575757","#b15928"];
+            
+        //Create checkboxes to filter the plot based on the number of series
+        function addCheckboxes(series) {
+            var checkboxGroup = d3.select('#filters').append("g")
+                                  .attr("class", "filter")
+                                  .style("float", "left")
+                                  .style("margin-left", "20%");
+
+            for ( var i = 0; i < series.length; i++ ) {
+                if ( i == 0 ) {
+                    checkboxGroup.append("div")
+                                 .html("<b>Series Selection</b>")
+                                 .attr("id", "seriesCheckboxesTitle")
+                }
+
+				var currentBox = checkboxGroup.append("div");
+
+				currentBox.html(series[i])
+                          .attr("id", "series_checkboxes")
+                          .append("input")
+	  					  .attr("type","checkbox")
+                          .attr("id", series[i])
+						  .attr("checked", true);		//start with a default value of true
+
+				currentBox.append("svg")
+                          .attr("width", "12px")
+                          .attr("height", "12px")
+                          .append("rect")
+                          .attr("width", "12px")
+                          .attr("height", "12px")
+                          .style("fill", colors[i]);
+            }
+        }
+
+        addCheckboxes(series);
+
+        //Create radio buttons to set the X and Y axis of the plot
+        function addAxisCheckBoxes(data) {
+            var radioButtonGroupX = d3.select('#filters').append("g").attr("class", "filter");
+            var radioButtonGroupY = d3.select('#filters').append("g").attr("class", "filter");
+
+            for ( var i = 0; i < data[0].points.length; i++ ) {
+                if ( i == 0 ) {
+                    radioButtonGroupX.append("div")
+                                     .html("<b>X Axis</b>")
+                                     .attr("id", "xAxis_radioButtonsTitle");
+            
+                    d3.select("#xPC"+i).attr("checked", true);
+
+                }
+
+                radioButtonGroupX.append("div")
+                                 .html("PC " + (i+1))
+                                 .attr("id", "xAxis_radioButtons")
+                                 .append("input")
+                                 .attr("type","radio")
+                                 .attr("id", "xPC" + i)
+                                 .attr("name", "xAxisRadioButtons");
+
+                if ( i == 0 ) {
+                    d3.select("#xPC"+i).attr("checked", true);
+                }
+            }
+
+            for ( var i = 0; i < data[0].points.length; i++ ) {
+
+                if ( i == 0 ) {
+                    radioButtonGroupY.append("div")
+                                     .html("<b>Y Axis</b>")
+                                     .attr("id", "yAxis_radioButtonsTitle")
+            
+                    d3.select("#yPC"+i).attr("checked", true);
+                }
+
+                radioButtonGroupY.append("div")
+                                 .html("PC " + (i+1))
+                                 .attr("id", "yAxis_radioButtons")
+                                 .append("input")
+                                 .attr("type","radio")
+                                 .attr("id", "yPC" + i)
+                                 .attr("name", "yAxisRadioButtons");
+                if ( i == 1 ) {
+                    d3.select("#yPC"+i).attr("checked", true);
+                }
+            }
+        }
+
+        addAxisCheckBoxes(data);
+
+        //Check the status of the series checkboxes and axis radiobuttons
+        function checkCheckboxes() {
+            //Check radio buttons to get axis variables
+            for ( var i = 0; i < data[0].points.length; i++ ) {
+                var currentRadioButton = d3.select("#xPC" + i)[0][0];
+                if (currentRadioButton.checked) {
+                    var xAxisIndex = i;
+                }
+                var currentRadioButton = d3.select("#yPC" + i)[0][0];
+                if (currentRadioButton.checked) {
+                    var yAxisIndex = i;
+                }
+            }
+
+            for ( var i = 0; i < series.length; i++) {
+                var currentCheckbox = d3.select("#"+series[i])[0][0];
+                if (currentCheckbox.checked) {
+                    if (d3.select("g").selectAll(".circles_"+series[i])[0].length != 0) {
+                        d3.select("g").selectAll(".circles_"+series[i]).remove()
+                        d3.select("#ss_chart").selectAll(".circles_ss_"+series[i]).remove()
+                    }
+                    plotSeries(data, currentCheckbox.id, xAxisIndex, yAxisIndex);
+                }
+                if (!currentCheckbox.checked) {
+                    d3.select("g").selectAll(".circles_"+series[i]).remove()
+                    d3.select("#ss_chart").selectAll(".circles_ss_"+series[i]).remove()
+                }
+            }
+            //Clear selected data points
+            removeCircles();
+        }
+
+	//Check all series checkboxes
+	function checkAllSeriesBoxes() {
+            for ( var i = 0; i < series.length; i++) {
+                 d3.select("#"+series[i]).property("checked", true);
+
+	    }
+	}
+
+	//Uncheck all series checkboxes
+	function uncheckAllSeriesBoxes() {
+            for ( var i = 0; i < series.length; i++) {
+                 d3.select("#"+series[i]).property("checked", false);
+
+	    }
+	}
+
+        //Create button to update the plots
+        var buttonDiv = d3.select("#filters").append("g").attr("class", "filter").style("float", "left");
+
+	buttonDiv.append("div")
+		  .append("input")
+		  .style("margin", "10px 0px 0px 00px")
+		  .attr("type", "button")
+		  .attr("id", "updatePlotButton")
+		  .attr("value", "Update Plot")
+		  .style("font-size", "20px");
+
+	buttonDiv.append("div")
+		  .append("input")
+		  .style("margin", "10px 0px 0px 00px")
+		  .attr("type", "button")
+		  .attr("id", "deselectAllButton")
+		  .attr("value", "Deselect All Series")
+		  .style("font-size", "20px");
+
+	buttonDiv.append("div")
+		  .append("input")
+		  .style("margin", "10px 0px 0px 0px")
+		  .attr("type", "button")
+		  .attr("id", "selectAllButton")
+		  .attr("value", "Select All Series")
+		  .style("font-size", "20px");
+
+        d3.select("#updatePlotButton").on("click", checkCheckboxes);
+        d3.select("#selectAllButton").on("click", checkAllSeriesBoxes);
+        d3.select("#deselectAllButton").on("click", uncheckAllSeriesBoxes);
+
+        //Get data points associated with a single series
+        function getSingleSeriesData(data,seriesName) {
+            var tmp = [];
+            for ( var i = 0; i < data.length; i++ ) {
+                if (seriesName == data[i].sample) { tmp.push(data[i]); }
+            }
+            return tmp;
+        }
+
+        //plot just one series
+        function plotSeries(data, seriesName, xAxisIndex, yAxisIndex) {
+
+            //set x and y domains
+            xRange.domain([d3.min(data, function(d) { return d.points[xAxisIndex];}), d3.max(data, function(d) { return d.points[xAxisIndex];})]);
+            yRange.domain([d3.min(data, function(d) { return d.points[yAxisIndex];}), d3.max(data, function(d) { return d.points[yAxisIndex];})]);
+
+            //set axes
+            var xAxis = d3.svg.axis()
+                          .scale(xRange)
+                          .orient("bottom");
+            var yAxis = d3.svg.axis()
+                          .scale(yRange)
+                          .orient("left");
+
+            //update axis
+            svg.select("g.x.axis")
+               .call(xAxis);
+            svg.select("g.y.axis")
+               .call(yAxis);
+
+            svg.select(".xAxisLabel")
+               .text("PC " + (xAxisIndex+1));
+            svg.select(".yAxisLabel")
+               .text("PC " + (yAxisIndex+1));
+
+            //Create circles for PC scatter plot
+            svg.append("g")
+               .attr("class", "circles_"+seriesName)
+               .selectAll("circle")
+               .data(getSingleSeriesData(data, seriesName))
+               .enter()
+               .append("circle")
+               .attr("cx", function(d) { return xRange(d.points[xAxisIndex]); } )
+               .attr("cy", function(d) { return yRange(d.points[yAxisIndex]); } )
+               .attr("r", 2)
+               .attr("fill", colors[series.indexOf(seriesName)])
+               .style("stroke", colors[series.indexOf(seriesName)])
+               .on("mouseover", mouseover)
+               .on("mouseout", function() { ssFocus.style("display", "none"); pcFocus.style("display", "none"); })
+               .on("click", cloned)
+               .on("dblclick", removeCircles);
+
+            //Plot stress/strain curve
+            xRange.domain([0, d3.max(data, function(d) { return d.Strain ;})]);
+//             yRange.domain([0, d3.max(data, function(d) { return d.Load_in_Kgs ;})]);
+            yRange.domain([0, d3.max(data, function(d) { return d.Stress_MPa ;})]);
+
+            var xAxis = d3.svg.axis()
+                          .scale(xRange)
+                          .orient("bottom");
+            var yAxis = d3.svg.axis()
+                          .scale(yRange)
+                          .orient("left");
+
+            ssChart.select("g.x.axis")
+                   .call(xAxis);
+            ssChart.select("g.y.axis")
+                   .call(yAxis);
+
+            ssChart.select(".xAxisLabel")
+                   .text("Strain");
+            ssChart.select(".yAxisLabel")
+                   .text("Stress (MPa)");
+
+            ssChart.append("g")
+                   .attr("class", "circles_ss_"+seriesName)
+                   .selectAll("circle")
+                   .data(getSingleSeriesData(data, seriesName))
+                   .enter()
+                   .append("circle")
+                   .attr("cx", function(d) { return xRange(d.Strain); } )
+//                    .attr("cy", function(d) { return yRange(d.Load_in_Kgs); } )
+                   .attr("cy", function(d) { return yRange(d.Stress_MPa); } )
+                   .attr("r", 2)
+                   .attr("fill", colors[series.indexOf(seriesName)])
+                   .style("stroke", colors[series.indexOf(seriesName)]);
+        }
+
+        //create focus ring to show mouseover
+        var ssFocus = ssChart.append("g")
+                             .attr("class", "focus")
+                             .style("display", "none");
+                
+        ssFocus.append("circle")
+               .attr("r", 7)
+               .style("stroke", "black");
+                
+        var pcFocus = svg.append("g")
+                         .attr("class", "focus")
+                         .style("display", "none");
+        
+        pcFocus.append("circle")
+               .attr("r", 7)
+               .style("stroke", "black");
+            
+        pcFocus.append("text")
+               .attr("class", "load")
+               .attr("x", 0)
+               .attr("y", -20)
+               .attr("dy", ".35em")
+               .attr("text-anchor", "middle")
+               .style("font-family", "sans-serif");
+            
+        pcFocus.append("text")
+               .attr("class", "strain")
+               .attr("x", 0)
+               .attr("y", -35)
+               .attr("dy", ".35em")
+               .attr("text-anchor", "middle")
+               .style("font-family", "sans-serif");
+            
+        pcFocus.append("text")
+               .attr("class", "sample")
+               .attr("x", 0)
+               .attr("y", -50)
+               .attr("dy", ".35em")
+               .attr("text-anchor", "middle")
+               .style("font-family", "sans-serif");
+
+        //create overlaying rect just for double-click area
+        svg.append("rect")
+           .attr("class", "overlay")
+           .attr("width", width)
+           .attr("height", height)
+           .on("dblclick", removeCircles);
+                
+        //show focus circle and text when hovering over points
+        function mouseover(d){
+            ssFocus.style("display", null);
+            pcFocus.style("display", null);
+                
+            xloc = d3.select(this).attr("cx")
+            yloc = d3.select(this).attr("cy")
+            ssXloc = xRange(d.Strain)
+            ssYloc = yRange(d.Stress_MPa)
+                
+            ssFocus.attr("transform", "translate(" + ssXloc+ "," +ssYloc + ")");
+            pcFocus.attr("transform", "translate(" + xloc+ "," +yloc + ")");
+            
+            formatVal = d3.format(".2f");
+            strain = "Strain: "+formatVal(d.Strain);
+            load = "Stress (MPa): "+formatVal(d.Stress_MPa);
+            pcFocus.select(".load").text(load).style("font-size", "12px");
+            pcFocus.select(".strain").text(strain).style("font-size", "12px");;
+            pcFocus.select(".sample").text(d.sample).style("font-size", "12px");;
+        }
+            
+        //keep track of num of images
+        var numPics = 0;
+            
+        //click to get image for a point
+        function cloned(d) {
+            image.selectAll(".blankImageText").remove();
+            //only allow 4 images at a time
+            if (numPics >= 4) {
+                removeCircles()
+            }
+                
+            //create static focus circle
+            pcFocusClone = svg.append("g")
+                              .attr("class", "focusClone")
+                              .attr("transform", pcFocus.attr("transform"))
+                              .style("display", null);
+            
+            pcFocusClone.append("circle")
+                        .attr("r", 5)
+                        .style("stroke", "black");
+
+            pcFocusClone.append("text")
+                        .attr("class", "load")
+                        .attr("x", 0)
+                        .attr("y", -20)
+                        .attr("dy", ".35em")
+                        .attr("text-anchor", "middle");
+
+            //set text for static focus circle
+            pcFocusClone.select(".load").text(numPics+1)
+                
+            ssXloc = xRange(d.Strain)
+            ssYloc = yRange(d.Stress_MPa)
+            
+            ssFocusClone = ssChart.append("g")
+                                  .attr("class", "focusClone")
+                                  .attr("transform", "translate(" + ssXloc+ "," + ssYloc + ")")
+                                  .style("display", null);
+            
+            ssFocusClone.append("circle")
+                        .attr("r", 5)
+                        .style("stroke", "black")
+                        .style("fill", "none");
+            
+            ssFocusClone.append("text")
+                        .attr("class", "load")
+                        .attr("x", 0)
+                        .attr("y", -20)
+                        .attr("dy", ".35em")
+                        .attr("text-anchor", "middle");
+            
+            ssFocusClone.select(".load").text(numPics+1)
+
+            //format location of images
+            var imgScale = 0.5;
+            imgXLoc = [-10, imgScale*width+30, -10, imgScale*width+30];
+            imgYLoc = [25, 25, imgScale*height+60, imgScale*height+60];
+            
+            formatVal = d3.format(".2f");
+            
+            //descriptive text for image
+            image.append("text")
+                 .attr("x", imgXLoc[numPics]+imgScale*width/2)
+                 .attr("y", imgYLoc[numPics]-10)
+                 .attr("dy", ".35em")
+                 .attr("text-anchor", "middle")
+                 .style("background-color", "white")
+                 .text("("+(numPics+1)+") "+d.sample + ", Strain: "+formatVal(d.Strain) +", Stress (MPa): " + formatVal(d.Stress_MPa))
+	         .style("font-size", "14px")
+	         .style("font-family", "sans-serif");
+
+            //show image
+            image.append("image")
+                 .attr("xlink:href", "./thumbnails/"+d.pic)
+                 .attr("x", imgXLoc[numPics])
+                 .attr("y", imgYLoc[numPics])
+                 .attr("width", imgScale*width)
+                 .attr("height", imgScale*height);
+                
+            numPics = numPics +1;
+        }
+                
+        //remove all static focus circles and images
+        function removeCircles() {
+            numPics = 0;
+            image.selectAll("image").remove();
+            image.selectAll("text").remove();
+            svg.selectAll("g.focusClone").remove();
+            ssChart.selectAll("g.focusClone").remove();
+
+            //text for image space when no images are present
+            image.append("text")
+            .attr("class", "blankImageText")
+            .attr("x", (width / 1.85))
+            .attr("y", (height/2))
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .style("font-family", "sans-serif")
+            .text("Click on a PC point!");
+            
+
+        }
+            
+        checkCheckboxes();
+            
+    });//end d3.json
+</script>
