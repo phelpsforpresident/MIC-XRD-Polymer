@@ -5,7 +5,7 @@ email: abhiram.kannan@gatech.edu
 description: >
   Tell us about your site
 baseurl: "/MIC-XRD-Polymer" # replace ``/research-pages`` with the name of the parents repository
-url: "phelpsforpresident.tmp.github.io" # replate ``Materials-Informatics-Lab`` with your Github username
+url: "phelpsforpresident.github.io" # replate ``Materials-Informatics-Lab`` with your Github username
 #twitter_username: twitterhandle
 disqus: phelpsforpresident
 
