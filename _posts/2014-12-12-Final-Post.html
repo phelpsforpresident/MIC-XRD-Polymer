@@ -74,12 +74,58 @@ from the SAXS images in the future.
 
 # Collaboration
 
-During this semester we were able to collaborate with 
+[Abhiram](https://github.com/phelpsforpresident) comes from the Materials 
+Science and Engineering department, while [David](https://github.com/davidbrough1) 
+comes from the Computational Science and Engineering department. Abhiram 
+cleaned and selected the dataset for this project as well as contributed to 
+posts and some coding. David coded most of the classes and function used for 
+dimensionality reduction and the processing linkage. He also contributed to 
+posts and worked out derivations. 
 
-# Work Assignments
-
-The 
+We had several conversations with [Dr. Kalidindi](http://www.me.gatech.edu/faculty/kalidindi) 
+that were useful in determining a project direction. We also met with [Dr. Garmestani](http://www.mse.gatech.edu/faculty/garmestani)
+to discuss the relationship between X-ray data and pair correlation functions.
 
 # Trials - Success and Failures
+
+As mentioned [above](http://phelpsforpresident.github.io/MIC-XRD-Polymer/2014/12/12/Final-Post.html#Challenges), 
+we spent significant time trying to understand the physical interpretation of 
+the Fourier transform of the SAXS images. We believe we have a good enough 
+understanding to generate the 2-point statistics as this project continues.
+
+Originally PCA was used on the entire X-ray scattering image to do 
+dimensionality reduction. This turned out to be somewhat slow because of the 
+size of the images and because of some of the data structures were initially 
+being used.
+
+Later the [dimeion_reducer](https://github.com/phelpsforpresident/MIC-XRD-Polymer/blob/gh-pages/python_scripts/dimension_reducer.py)
+class was created that would allow for flexibility in selecting a dimenionality 
+reduction technique. This class was designed to integrate well with machine 
+learn python package [scikit-learn](http://scikit-learn.org/stable/).
+
+After trying several variations on PCA, we found that [kernel PCA](http://scikit-learn.org/stable/auto_examples/decomposition/plot_kernel_pca.html) 
+will a linear kernel gave us a reduced representation an order of magnitude 
+faster than [PCA](http://scikit-learn.org/stable/auto_examples/decomposition/plot_pca_iris.html). 
+We also explored [sparse PCA](http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.SparsePCA.html) and
+found that is gave similar results to PCA and kernel PCA, but we not as fast as 
+kernel PCA.
+
+We attempted to use a completely new framework for determining a 
+structure-processing relationship. [Previously](dx.doi.org/doi:10.1016/j.ijplas.2010.03.010)
+a numerical integration approach has been used to construct these linkages. 
+In this project we used a statistical model know as [transfer function model](http://www.le.ac.uk/ec/research/RePEc/lec/leecon/dp11-15.pdf). The transfer function model can be thought of as a method to use regression 
+for digital filter design. 
+
+A good transfer function model will have residuals that are temporally 
+uncorrelated and combine to form a normal distribution. In our case, we found 
+that a model with the order (2, 1, 5) gave us the best result. The 2 represents 
+the number of autoregressive terms in the model, 1 represents the number of 
+times the time series were differenced and 5 represents the time be previous 
+time steps used from an exogenous (input) series. Our model equation took the 
+following form.
+
+$$ X_t= a_1 X_{t-1} + a_2 X_{t_2} + b_0 \varepsilon_t + b_1 \varepsilon_t + 
+b_2 \varepsilon + b_3 \varepsilon + b_4 \varepsilon + b_5 \varepsilon + Err$$
+
 
 # Conclusion
