@@ -103,12 +103,23 @@ class was created that would allow for flexibility in selecting a dimenionality
 reduction technique. This class was designed to integrate well with machine 
 learn python package [scikit-learn](http://scikit-learn.org/stable/).
 
+![Originial Image](https://farm6.staticflickr.com/5591/15083317630_cbdcb13c46_z_d.jpg)
+**Original Scattering Image**
+
 After trying several variations on PCA, we found that [kernel PCA](http://scikit-learn.org/stable/auto_examples/decomposition/plot_kernel_pca.html) 
 will a linear kernel gave us a reduced representation an order of magnitude 
 faster than [PCA](http://scikit-learn.org/stable/auto_examples/decomposition/plot_pca_iris.html). 
 We also explored [sparse PCA](http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.SparsePCA.html) and
 found that is gave similar results to PCA and kernel PCA, but we not as fast as 
 kernel PCA.
+
+Because the signal strength for each image is very low, the log of every pixel was used. 
+In order to account for the variation in X-ray scattering intensity due to sample in thickness,
+we divided each image by the mean intensity.  We also removed the areas of the images that did 
+not contain scattering from the polyethylene. 
+
+![X-ray Scattering image](https://farm9.staticflickr.com/8628/15799068949_9ff2e93ec5_z_d.jpg)
+**An example of an image used in Kernel PCA**
 
 We attempted to use a completely new framework for determining a 
 structure-processing relationship. [Previously](dx.doi.org/doi:10.1016/j.ijplas.2010.03.010)
@@ -124,8 +135,14 @@ times the time series were differenced and 5 represents the time be previous
 time steps used from an exogenous (input) series. Our model equation took the 
 following form.
 
-$$ X_t= a_1 X_{t-1} + a_2 X_{t_2} + b_0 \varepsilon_t + b_1 \varepsilon_t + 
-b_2 \varepsilon + b_3 \varepsilon + b_4 \varepsilon + b_5 \varepsilon + Err$$
+$$ X_t= a_1 X_{t-1} + a_2 X_{t_2} + b_0 \varepsilon_t + b_1 \varepsilon_{t-1} + 
+b_2 \varepsilon_{t-2} + b_3 \varepsilon_{t-3} + b_4 \varepsilon_{t-4} + 
+b_5 \varepsilon_{t-5} + Err$$
+
+In equation above, $X_t$ is value for a given principle component over time, and 
+$varespsilon_t$ is the measured strain for the sample. Below are a few images of the
+predicted processing paths compared to original data.
+
 
 
 # Conclusion
