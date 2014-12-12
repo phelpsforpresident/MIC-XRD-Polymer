@@ -15,8 +15,6 @@ stress in the sample was measured and an X-scattering intensity image was
 taken roughly every four seconds. The twelve samples varied systematically 
 between difference in densities, processing conditions, and thickness. 
 
-For each of the sampels
-
 ![Data Image](https://raw.githubusercontent.com/davidbrough1/ME_8883/master/14943264377_6685b8f7e5_z.jpg)
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=rwyDDep-yyg
@@ -30,7 +28,7 @@ alt="PE SAXS" width="700" height="525" border="10" /></a>
 The table below shows the density, thickness and processing condition for 
 the twelve samples.
 
-|Density (gms/cc)|Thickness (µm)|Processing Condition|
+|Density (gm/cc)|Thickness (µm)|Processing Condition
 |:---:|:---:|:---:|
 |0.912| 20 | A |
 |0.912| 30 | A |
@@ -46,7 +44,7 @@ the twelve samples.
 |0.923| 75 | B |
 
 In this project we worked towards generating structure processing linkage 
-between the polyethene samples and the processing routs.
+between the polyethylene samples and the processing routs.
 , taking each on of the X-ray scattering images and recovering the 2-point
 spatial correlations. 
 
@@ -55,11 +53,24 @@ spatial correlations.
 A considerable amount of time was spent trying to recover the 2-point 
 statistics from the Small Angle X-ray Scattering (SAXS) images. Although
 we understood the need to take a Fourier transform of the image (a shown
-in these two posts), we were unclear about the how to recover the local
-state from the different in electron density
+in [this](http://phelpsforpresident.github.io/MIC-XRD-Polymer/2014/09/17/2-Point-Statistics-and-Xray-Scattering.html)
+post as well as [this](http://phelpsforpresident.github.io/MIC-XRD-Polymer/2014/10/15/Autocorrelation-from-X-ray-Scattering-Data.html)  
+post), we were unclear as to how to  interpret the physical meaning of 
+these real space plots.
 
-> [2-Point Statistics and X-ray Scattering Data](http://phelpsforpresident.github.io/MIC-XRD-Polymer/2014/09/17/2-Point-Statistics-and-Xray-Scattering.html)
-> [Autocorrelation from X-ray Scattering Data](http://phelpsforpresident.github.io/MIC-XRD-Polymer/2014/10/15/Autocorrelation-from-X-ray-Scattering-Data.html)
+Late in the semester, we were able to meet with [Dr. Garmestani](http://www.mse.gatech.edu/faculty/garmestani) 
+from the Materials Science and Engineering department at Georgia Tech. In 
+previous [research](http://dx.doi.org/doi:10.1016/j.actamat.2011.01.013) 
+his group was able to recover pair correlation function  for a 2-phase 
+material from SAXS data. From this information, we were able to [derive](http://nbviewer.ipython.org/github/phelpsforpresident/MIC-XRD-Polymer/blob/gh-pages/notebooks/Relationship_between_XRD_and_Autocorrelation.ipynb) 
+the relationship to get the 2-point statistics from the SAXS images.
+
+$$ f^{11}( \pmb x) = \frac{1}{V \eta_o^2} \int I ( \pmb k) e^{-i\pmb k\pmb x} d\pmb k + V_1^2 $$
+
+Unfortunately because we found this relationship too late in the semester to 
+use the 2-point statistics for the linkage, but we are interested in using 
+the 2-point statistics to do [microstructure reconstruction](dx.doi.org/doi:10.1016/j.actamat.2007.10.044) 
+from the SAXS images.
 
 # Collaboration
 
