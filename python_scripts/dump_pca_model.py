@@ -4,8 +4,7 @@ import numpy as np
 from sklearn.decomposition import RandomizedPCA
 import cPickle as pickle
 
-#root_path = '/Users/abhiramkannan/Documents/'
-root_path = '/home/david/Pictures/thumbnails_sep/'
+root_path = '/Users/abhiramkannan/Documents/'
 directories = ['SAXS_for_DB_1/', 'SAXS_for_DB_2/', 'SAXS_for_DB_3/',
                'SAXS_for_DB_4/', 'SAXS_for_DB_5/', 'SAXS_for_DB_6/',
                'SAXS_for_DB_7/', 'SAXS_for_DB_8/', 'SAXS_for_DB_9/',
